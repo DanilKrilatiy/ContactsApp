@@ -10,12 +10,11 @@ namespace ContactsApp
 {
     public class Менеджер_проекта
     {
-        private const string filePath = @"C:\Users\Danil\Documents\ContactsApp.notes"; // Путь к файлу
+        private static string filePath = @"C:\Users\Danil\Documents\ContactsApp.notes";
 
-        public void SaveProject(Проект project)
+        public static void SaveProject(Проект project)
         {
             string json = JsonConvert.SerializeObject(project, Formatting.Indented);
-
             try
             {
                 File.WriteAllText(filePath, json);
@@ -27,7 +26,7 @@ namespace ContactsApp
             }
         }
 
-        public Проект LoadProject()
+        public static Проект LoadProject()
         {
             try
             {
@@ -72,12 +71,19 @@ namespace ContactsApp
 
     class Program
     {
-        static void Main()
+        public static void Main()
         {
-            Менеджер_проекта projectManager = new Менеджер_проекта();
-            projectManager.AssignProjectToContact("New Project", "John Doe", 79991234567);
+            Проект projectToSave = new Проект { Name = "Sample Project", Description = "" };
+
+            Менеджер_проекта.SaveProject(projectToSave);
+
+            Проект loadedProject = Менеджер_проекта.LoadProject();
+
+            if (loadedProject != null)
+            {
+                Console.WriteLine(loadedProject);
+            }
         }
     }
-}
-    
+} 
 
