@@ -2,35 +2,31 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace ContactsApp
 {
     public class Номер_телефона
     {
-        private long number;
+        private string _number;
 
-        public long Number
+        public string Number
         {
-            get { return number; }
+            get => _number;
             set
             {
-                if (IsRussianPhoneNumber(value))
+                if (value.Length != 11 || !long.TryParse(value, out _) || value[0] != '7')
                 {
-                    number = value;
+                    throw new ArgumentException("Phone number must be exactly 11 digits long and start with '7'.");
                 }
-                else
-                {
-                    throw new ArgumentException("Invalid phone number. Please enter a Russian phone number starting with '7'.");
-                }
+                _number = value;
             }
         }
 
-        private bool IsRussianPhoneNumber(long num)
+        public Номер_телефона(string number)
         {
-            string numStr = num.ToString();
-
-            return numStr.Length == 11 && numStr[0] == '7';
+            Number = number;
         }
     }
 }

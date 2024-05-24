@@ -8,68 +8,97 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Xml;
 using ContactsApp;
+using Newtonsoft.Json;
+using System.Timers;
 
 namespace ContactsAppUI
 {
     public partial class Form1 : Form
     {
+        private Проект _currentProject;
+        private Менеджер_проекта _projectManager;
+
         public Form1()
         {
             InitializeComponent();
+            _currentProject = new Проект();
+            _projectManager = new Менеджер_проекта();
         }
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            Номер_телефона phoneNumber = new Номер_телефона();
-            phoneNumber.Number = 79991234567;
-
-            Контакт contact = new Контакт();
-            contact.Name = "John Doe";
-            contact.Phone = phoneNumber;
-
-            Проект project = new Проект();
-            project.Name = "New Project";
-            project.Description = "This is a new project";
-
-            Менеджер_проекта projectManager = new Менеджер_проекта();
-
-            // Вызов первого метода
-            _ = new Проект() { Name = "New Project" };
-            _ = new Контакт() { Name = "John Doe", Phone = new Номер_телефона { Number = 79991234567 } };
-            projectManager.AssignProjectToContact(project, contact);
-
-            // Вызов второго метода
-            projectManager.AssignProjectToContact("New Project", "Jane Smith", 79998887766);
-
 
         }
 
-        private void SaveProject()
+        private void DisplayContacts()
         {
-            // Создание и инициализация объекта для сериализации
-            Проект project = new Проект { Name = "Sample Project", Description = "Sample Description" };
-
-            // Сохранение данных в указанный файл с помощью Менеджер_проекта
-            Менеджер_проекта.SaveProject(project);
-
-            MessageBox.Show("Проект успешно сохранен", "Сообщение");
+            lstContacts.Items.Clear();
+            foreach (var contact in _currentProject.Contacts)
+            {
+                lstContacts.Items.Add($"{contact.LastName} {contact.FirstName} - {contact.PhoneNumber.Number} - {contact.Email}");
+            }
         }
 
-        private void LoadProject()
+        private void BtnSave_Click(object sender, EventArgs e)
         {
-            // Загрузка сохраненного объекта из файла с помощью Менеджер_проекта
-            Проект loadedProject = Менеджер_проекта.LoadProject();
+            try
+            {
+                _projectManager.SaveProject(_currentProject);
+                MessageBox.Show("Project saved successfully!");
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error saving project: {ex.Message}");
+            }
+        }
 
-            if (loadedProject != null)
+        private void BtnLoad_Click(object sender, EventArgs e)
+        {
+            try
             {
-                MessageBox.Show($"Проект {loadedProject.Name} успешно загружен", "Сообщение");
-                // Вывод загруженного проекта на форму или обработка данных
+                _currentProject = _projectManager.LoadProject();
+                DisplayContacts();
+                MessageBox.Show("Project loaded successfully!");
             }
-            else
+            catch (Exception ex)
             {
-                MessageBox.Show("Ошибка при загрузке проекта", "Ошибка");
+                MessageBox.Show($"Error loading project: {ex.Message}");
             }
+        }
+
+        private void BtnaddContact_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                var lastName = txtLastName.Text;
+                var firstName = txtfirstName.Text;
+                var phoneNumber = new Номер_телефона(txtPhoneNumber.Text);
+                var birthDate = dateBirthDate.Text ?? throw new ArgumentException("BirthDate is required");
+                var email = txtEmail.Text;
+                var vkId = txtVkId.Text;
+
+                var newContact = new Контакт(lastName, firstName, phoneNumber, birthDate, email, vkId);
+                _currentProject.AddContact(newContact);
+                DisplayContacts();
+                ClearInputFields();
+                MessageBox.Show("Contact added successfully!");
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error adding contact: {ex.Message}");
+            }
+        }
+
+        private void ClearInputFields()
+        {
+            txtLastName.Clear();
+            txtfirstName.Clear();
+            txtPhoneNumber.Clear();
+            dateBirthDate.Text = null;
+            txtEmail.Clear();
+            txtVkId.Clear();
         }
     }
 }
